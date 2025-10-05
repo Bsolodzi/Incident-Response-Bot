@@ -1,4 +1,5 @@
-# 🚨 Automated AWS Incident Response Bot  
+# 🚨 Automated AWS Incident Response Bot
+
 **Terraform | AWS GuardDuty | EventBridge | Lambda | Slack**
 
 This project demonstrates how to build an **Automated AWS Incident Response Bot** that detects security findings from **AWS GuardDuty**, triggers an **AWS Lambda** function via **EventBridge**, and sends real-time notifications to a **Slack channel**. The entire infrastructure is provisioned using **Terraform**.
@@ -23,12 +24,13 @@ This project demonstrates how to build an **Automated AWS Incident Response Bot*
 
 ---
 
-## 📖 Overview
+## 📖 Overview 
 
 Cloud environments are continuously exposed to security threats. **AWS GuardDuty** helps detect malicious activities such as unauthorized access, data exfiltration, or crypto-mining.  
 This project automates the response to such incidents using a **serverless workflow** that integrates AWS services and **Slack notifications** for real-time alerting.
 
 When a GuardDuty finding occurs:
+
 1. **GuardDuty** detects and publishes the finding.
 2. **EventBridge** triggers an **AWS Lambda** function.
 3. The **Lambda** function parses the finding and sends a formatted alert to **Slack**.
@@ -37,30 +39,30 @@ When a GuardDuty finding occurs:
 ---
 
 ## 🏗 Architecture
-![Architecture Diagram Placeholder](images/architecture-diagram.png)  
 
+![Architecture Diagram Placeholder](images/architecture-diagram.png)
 
 ---
 
 ## ☁️ Key AWS Services
 
-| Service | Purpose |
-|----------|----------|
-| **AWS GuardDuty** | Detects security threats automatically |
-| **AWS EventBridge** | Routes GuardDuty findings to Lambda |
-| **AWS Lambda** | Processes the findings and sends Slack alerts |
-| **Terraform** | Automates infrastructure provisioning |
-| **Slack Webhook** | Receives real-time security notifications |
+| Service             | Purpose                                       |
+| ------------------- | --------------------------------------------- |
+| **AWS GuardDuty**   | Detects security threats automatically        |
+| **AWS EventBridge** | Routes GuardDuty findings to Lambda           |
+| **AWS Lambda**      | Processes the findings and sends Slack alerts |
+| **Terraform**       | Automates infrastructure provisioning         |
+| **Slack Webhook**   | Receives real-time security notifications     |
 
 ---
 
 ## ✨ Features
 
-- Fully automated infrastructure deployment using **Terraform**  
-- Event-driven **incident response pipeline**  
-- Real-time alerts to **Slack**  
-- Simple and modular code structure  
-- Secure IAM permissions following least-privilege principle  
+- Fully automated infrastructure deployment using **Terraform**
+- Event-driven **incident response pipeline**
+- Real-time alerts to **Slack**
+- Simple and modular code structure
+- Secure IAM permissions following least-privilege principle
 
 ---
 
@@ -68,10 +70,10 @@ When a GuardDuty finding occurs:
 
 Before you begin, ensure you have the following:
 
-- ✅ [AWS Account](https://aws.amazon.com/resources/create-account/) with administrative access  
-- ✅ [Terraform v1.5+](https://developer.hashicorp.com/terraform/downloads) installed  
-- ✅ [AWS CLI](https://aws.amazon.com/cli/) configured (`aws configure`)  
-- ✅ Slack workspace with permission to create an **Incoming Webhook**  
+- ✅ [AWS Account](https://aws.amazon.com/resources/create-account/) with administrative access
+- ✅ [Terraform v1.5+](https://developer.hashicorp.com/terraform/downloads) installed
+- ✅ [AWS CLI](https://aws.amazon.com/cli/) configured (`aws configure`)
+- ✅ Slack workspace with permission to create an **Incoming Webhook**
 - ✅ [Python 3.9+](https://www.python.org/downloads/) installed (for Lambda function)
 
 ---
@@ -79,17 +81,22 @@ Before you begin, ensure you have the following:
 ## ⚙️ Setup Instructions
 
 ### 1. Clone the Repository
-<pre>```bash
+
+```bash
 git clone https://github.com/<your-username>/aws-incident-response-bot.git
-cd aws-incident-response-bot ``` </pre>
+cd aws-incident-response-bot
+```
 
 2. Configure AWS Credentials
 
 Ensure your credentials are set up and valid:
 
-<pre> ```bash aws configure ``` </pre>
+```bash
+aws configure
+``` 
 
 ### 3. Create a Slack Webhook
+
 - Go to your Slack workspace → Apps → Manage Apps → Custom Integrations → Incoming Webhooks
 
 - Create a new webhook and copy the Webhook URL
@@ -98,17 +105,22 @@ Ensure your credentials are set up and valid:
 
 slack_webhook_url = "https://hooks.slack.com/services/XXXX/YYYY/ZZZZ"
 
-
 ## 🏗 Terraform Deployment
 
 1. Initialize Terraform
-<pre> ```bash terraform init ```</pre>
+```
+bash terraform init
+```
 
-2. Review the Plan
-<pre> ```bash terraform plan ```</pre>
+3. Review the Plan
+```
+bash terraform plan
+```
 
 3. Apply the Configuration
-<pre> ```bash terraform apply ``` </pre>
+```
+bash terraform apply
+```
 
 When prompted, confirm with `yes`.
 
@@ -124,7 +136,7 @@ Terraform will provision:
 The Lambda function sends messages to Slack using your webhook.
 Example of Slack message payload (Python snippet inside Lambda):
 
-<pre>```bash
+```bash
 import json, os, urllib3
 
 def lambda_handler(event, context):
@@ -141,7 +153,7 @@ def lambda_handler(event, context):
             "text": f"*AWS GuardDuty Alert*\n*Title:* {title}\n*Severity:* {severity}\n*Region:* {region}\n*Description:* {description}"
         }
         http.request('POST', webhook_url, body=json.dumps(message), headers={'Content-Type': 'application/json'})
-</pre>
+```
 
 ## 🧪 Testing the Bot
 
@@ -149,7 +161,9 @@ You can test the setup by:
 
 Generating sample GuardDuty findings:
 
-<pre> ```bash aws guardduty create-sample-findings --detector-id <detector-id> ``` </pre>
+```bash 
+aws guardduty create-sample-findings --detector-id <detector-id>
+```
 
 Check your Slack channel — you should receive a message within seconds.
 
@@ -159,19 +173,21 @@ Review the Lambda CloudWatch logs to verify event processing.
 
 To remove all created resources and avoid charges:
 
-<pre> ```bash terraform destroy ``` </pre>
+```bash
+terraform destroy 
+```
 
 Confirm with `yes`.
 
 ## 🚀 Future Improvements
 
-* Add automated remediation steps (e.g., isolate EC2 instance, revoke IAM credentials)
+- Add automated remediation steps (e.g., isolate EC2 instance, revoke IAM credentials)
 
-* Add support for multiple notification channels (Teams, SNS, PagerDuty)
+- Add support for multiple notification channels (Teams, SNS, PagerDuty)
 
-* Integrate with AWS Security Hub for centralized visibility
+- Integrate with AWS Security Hub for centralized visibility
 
-* Use AWS Step Functions for advanced workflows
+- Use AWS Step Functions for advanced workflows
 
 ## 👨‍💻 Author
 
